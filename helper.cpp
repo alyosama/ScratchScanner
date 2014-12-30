@@ -81,12 +81,6 @@ void extract(string imageName)
 	Point2f rect_points[4];
 	rr.points(rect_points);
 
-	for (int j = 0; j < 4; j++)
-		line(src, rect_points[j], rect_points[(j + 1) % 4], Scalar(0,0,255), 1, 8);
-
-	imshow("c", src);
-	waitKey(0);
-	return;
 	sortPointsClockwise(&(rect_points[0]));
 
 
