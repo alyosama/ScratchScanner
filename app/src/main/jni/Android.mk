@@ -9,11 +9,14 @@ OPENCV_INSTALL_MODULES:=on
 OPENCV_LIB_TYPE:=SHARED
 include ${OPENCVROOT}/sdk/native/jni/OpenCV.mk
 
-
-LOCAL_SRC_FILES := main.c
 LOCAL_LDLIBS += -llog
 LOCAL_MODULE := hello
 
 include $(BUILD_SHARED_LIBRARY)
 
+#tess-two
+TESSTWOROOT:= /home/aly/Android/tess-two
+include ${TESSTWOROOT}/jni/Android.mk
+
+LOCAL_SRC_FILES := main.c
 
