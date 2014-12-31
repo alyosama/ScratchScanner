@@ -6,5 +6,5 @@ void sortPointsClockwise(cv::Point2f a[]);
 
 
 /// Function header
-void extract(std::string imageName);
+bool extract(std::string imageName);
 
