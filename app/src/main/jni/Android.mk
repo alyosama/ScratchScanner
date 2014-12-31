@@ -9,14 +9,8 @@ OPENCV_INSTALL_MODULES:=on
 OPENCV_LIB_TYPE:=SHARED
 include ${OPENCVROOT}/sdk/native/jni/OpenCV.mk
 
-LOCAL_LDLIBS += -llog
-LOCAL_MODULE := hello
+LOCAL_MODULE    := cardreader
+LOCAL_SRC_FILES := jni_part.cpp
+LOCAL_LDLIBS +=  -llog -ldl
 
 include $(BUILD_SHARED_LIBRARY)
-
-#tess-two
-TESSTWOROOT:= /home/aly/Android/tess-two
-include ${TESSTWOROOT}/jni/Android.mk
-
-LOCAL_SRC_FILES := main.c
-

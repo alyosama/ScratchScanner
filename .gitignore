@@ -5,3 +5,7 @@
 .DS_Store
 /build
 .so
+/libraries/*
+/app/src/main/assests/*
+/app/src/main/jniLibs/*
+/app/src/main/jniLibs/armeabi-v7a/*
