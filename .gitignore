@@ -7,5 +7,6 @@
 .so
 /libraries/*
 /app/src/main/assests/*
+/app/src/main/assests/tessdata/*
 /app/src/main/jniLibs/*
 /app/src/main/jniLibs/armeabi-v7a/*
