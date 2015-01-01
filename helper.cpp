@@ -280,6 +280,7 @@ bool extract(string imageName)
 	Mat Homography = findHomography(srcPts, dstPts);
 	warpPerspective(full, outImg, Homography, outImgSize, CV_INTER_CUBIC);
 
+	
 	getColor(outImg);
 	//Make grayscale copy from new rectified image
 	Mat gray(outImg.size(), CV_8UC1);
@@ -291,8 +292,7 @@ bool extract(string imageName)
 
 	// Try to remove small words and holes
 	Mat tmp = thr.clone();
-	erode(thr, thr, Mat::ones(Size(11, 11), CV_8UC1));
-
+	
 	// Now find the greatest 5 contours the area with numbers should be one of them
 	vector<vector<Point> > contours2;
 	vector<Vec4i> hierarchy2;
@@ -379,13 +379,14 @@ bool extract(string imageName)
 	warpPerspective(outImg, tmp, Homography, outImgSize2, CV_INTER_CUBIC);
 	cvtColor(tmp, outImg, CV_BGR2GRAY);;
 
+	
 
 	//Adaptive threshold the white area to get better numbers than using the OTSU produced
 	// before
 	int rows = outImg.rows;
 	int cols = outImg.cols;
 	adaptiveThreshold(outImg, outImg, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 35, 10);
-
+	
 	// inverse the image to make the numbers in white
 	// And make morphological filling on object that interect with image boundary
 	Mat inv_out = 255 - outImg;
@@ -425,7 +426,10 @@ bool extract(string imageName)
 
 	// Close to remove small noise
 	kernel = (Mat_<uchar>(3, 3) << 0, 1, 0, 1, 1, 1, 0, 1, 0);
-	morphologyEx(outImg, outImg, MORPH_CLOSE, getStructuringElement(MORPH_RECT, Size(7, 7)));
+
+
+	
+
 
 	// Now thin the image to search for contours
 	thinning(255 - outImg, outImg);
@@ -459,13 +463,14 @@ bool extract(string imageName)
 
 	}
 
+	
 
 	// Dilate the thinned numbers to be better read by OCR
-	kernel = (Mat_<uchar>(3, 3) << 0, 1, 0, 1, 1, 1, 0, 1, 0);
+	kernel = (Mat_<uchar>(3, 3) << 1, 1, 1, 1, 1, 1, 1, 1, 1);
 	morphologyEx(outImg, outImg, MORPH_DILATE, kernel);
 	morphologyEx(outImg, outImg, MORPH_DILATE, kernel);
 
-
+	
 	imshow("t", outImg);
 
 	imwrite("im.tif", outImg);

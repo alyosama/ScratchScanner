@@ -5,7 +5,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {
-	bool t = extract("images/3"); // algorithm 1
+	bool t = extract("images/4"); // algorithm 1
 	if (t)
 	{
 		system("tesseract im.tif out nobatch digits");
