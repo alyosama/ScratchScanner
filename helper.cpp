@@ -4,7 +4,7 @@ using namespace std;
 
 void sortPointsClockwise(Point2f a[])
 {
-	
+
 	Point2f b[4];
 
 	Point2f ctr = (a[0] + a[1] + a[2] + a[3]);
@@ -35,14 +35,14 @@ void sortPointsClockwise(Point2f a[])
 
 }
 
-void dr(Mat& src, Point2f rect_points[4], Scalar t = Scalar(0,0,255))
+void dr(Mat& src, Point2f rect_points[4], Scalar t = Scalar(0, 0, 255))
 {
 	for (int j = 0; j < 4; j++)
 		line(src, rect_points[j], rect_points[(j + 1) % 4], t, 2, 8);
 }
 
 
-void tst(Mat& src,Mat& src_inv,Mat& dst,Mat& kernel, Point& p)
+void tst(Mat& src, Mat& src_inv, Mat& dst, Mat& kernel, Point& p)
 {
 
 	dst.at<uchar>(p.y, p.x) = 255;
@@ -226,8 +226,8 @@ bool extract(string imageName)
 	pyrDown(src, src);
 
 	//Make gray scale copy of image for further processing
-	cvtColor(src, src_gray, COLOR_BGR2GRAY);
-	
+	cvtColor(src, src_gray, CV_BGR2GRAY);
+
 
 	/// Detect edges using canny
 	Mat canny_output;
@@ -237,7 +237,7 @@ bool extract(string imageName)
 	/// Find contours
 	vector<vector<Point> > contours;
 	vector<Vec4i> hierarchy;
-	findContours(canny_output, contours, hierarchy, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
+	findContours(canny_output, contours, hierarchy, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
 	/// Get Largest Contour
 	int largest_area = 0;
@@ -250,7 +250,7 @@ bool extract(string imageName)
 			largest_contour_index = i;                //Store the index of largest contour
 		}
 	}
- 
+
 	// Get Minimum bounding rotated rectangle and sort its corners clockwise
 	RotatedRect rr = minAreaRect(contours[largest_contour_index]);
 	Point2f rect_points[4];
@@ -259,11 +259,11 @@ bool extract(string imageName)
 
 
 	//Calculate homography from bounding rectangle to new image boundaries
-	vector<Point2i> srcPts(4);
-	vector<Point2i> dstPts(4);
+	vector<Point2f> srcPts(4);
+	vector<Point2f> dstPts(4);
 
 	// Image points multiplied by 2 as it was scaled down by half
-	srcPts[0] = rect_points[0] *2;
+	srcPts[0] = rect_points[0] * 2;
 	srcPts[1] = rect_points[1] * 2;
 	srcPts[2] = rect_points[2] * 2;
 	srcPts[3] = rect_points[3] * 2;
@@ -278,16 +278,16 @@ bool extract(string imageName)
 
 	// Calculate the homography from the full resolution image
 	Mat Homography = findHomography(srcPts, dstPts);
-	warpPerspective(full, outImg, Homography, outImgSize, INTER_CUBIC);
+	warpPerspective(full, outImg, Homography, outImgSize, CV_INTER_CUBIC);
 
 	getColor(outImg);
 	//Make grayscale copy from new rectified image
 	Mat gray(outImg.size(), CV_8UC1);
-	cvtColor(outImg, gray, COLOR_BGR2GRAY);
+	cvtColor(outImg, gray, CV_BGR2GRAY);
 
 	//Apply threshold (otsu)
 	Mat thr;
-	threshold(gray, thr, 0, 255, THRESH_OTSU);
+	threshold(gray, thr, 0, 255, CV_THRESH_OTSU);
 
 	// Try to remove small words and holes
 	Mat tmp = thr.clone();
@@ -296,10 +296,10 @@ bool extract(string imageName)
 	// Now find the greatest 5 contours the area with numbers should be one of them
 	vector<vector<Point> > contours2;
 	vector<Vec4i> hierarchy2;
-	findContours(thr, contours2, hierarchy2, RETR_TREE, CHAIN_APPROX_SIMPLE, Point(0, 0));
+	findContours(thr, contours2, hierarchy2, CV_RETR_TREE, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
-	int l_a[] = { 0, 0, 0, 0 ,0};
-	int l_a_i[] = { 0, 0, 0, 0,0 };
+	int l_a[] = { 0, 0, 0, 0, 0 };
+	int l_a_i[] = { 0, 0, 0, 0, 0 };
 
 	for (int i = 0; i< contours2.size(); i++)
 	{
@@ -326,7 +326,7 @@ bool extract(string imageName)
 			break;
 		}
 	}
-	
+
 	//if not found give error
 	if (chosen == -1)
 	{
@@ -342,7 +342,7 @@ bool extract(string imageName)
 
 			dr(outImg, rect_points2, Scalar(rng.uniform(0, 255), rng.uniform(0, 255), rng.uniform(0, 255)));
 		}
-		
+
 		imshow("EROOOROROOROR", outImg);
 		waitKey(0);
 		return false;
@@ -376,22 +376,22 @@ bool extract(string imageName)
 
 	// Calculate the homography 
 	Homography = findHomography(srcPts, dstPts);
-	warpPerspective(outImg, tmp, Homography, outImgSize2, INTER_CUBIC);
-	cvtColor(tmp, outImg, COLOR_BGR2GRAY);;
+	warpPerspective(outImg, tmp, Homography, outImgSize2, CV_INTER_CUBIC);
+	cvtColor(tmp, outImg, CV_BGR2GRAY);;
 
 
 	//Adaptive threshold the white area to get better numbers than using the OTSU produced
 	// before
 	int rows = outImg.rows;
 	int cols = outImg.cols;
-	adaptiveThreshold(outImg, outImg, 255, ADAPTIVE_THRESH_MEAN_C, THRESH_BINARY, 35, 10);
+	adaptiveThreshold(outImg, outImg, 255, CV_ADAPTIVE_THRESH_MEAN_C, CV_THRESH_BINARY, 35, 10);
 
 	// inverse the image to make the numbers in white
 	// And make morphological filling on object that interect with image boundary
 	Mat inv_out = 255 - outImg;
 	Mat dst = Mat::zeros(outImg.size(), CV_8U);
 	Mat kernel = (Mat_<uchar>(3, 3) << 1, 1, 1, 1, 1, 1, 1, 1, 1);
-	
+
 	for (int i = 0; i < cols; i++){
 
 		uchar clr = outImg.at<uchar>(0, i);
@@ -399,10 +399,10 @@ bool extract(string imageName)
 		{
 			tst(outImg, inv_out, dst, kernel, Point(i, 0));
 		}
-		clr = outImg.at<uchar>(rows-1, i);
+		clr = outImg.at<uchar>(rows - 1, i);
 		if (clr == 0)
 		{
-			tst(outImg, inv_out, dst, kernel, Point(i, rows-1));
+			tst(outImg, inv_out, dst, kernel, Point(i, rows - 1));
 		}
 
 	}
@@ -414,40 +414,40 @@ bool extract(string imageName)
 		{
 			tst(outImg, inv_out, dst, kernel, Point(0, i));
 		}
-		clr = outImg.at<uchar>(i, cols-1);
+		clr = outImg.at<uchar>(i, cols - 1);
 		if (clr == 0)
 		{
-			tst(outImg, inv_out, dst, kernel, Point(cols-1, i));
+			tst(outImg, inv_out, dst, kernel, Point(cols - 1, i));
 		}
 	}
 
 
-	
+
 	// Close to remove small noise
 	kernel = (Mat_<uchar>(3, 3) << 0, 1, 0, 1, 1, 1, 0, 1, 0);
 	morphologyEx(outImg, outImg, MORPH_CLOSE, getStructuringElement(MORPH_RECT, Size(7, 7)));
-	
+
 	// Now thin the image to search for contours
-	thinning(255-outImg, outImg);
-	
-	
+	thinning(255 - outImg, outImg);
+
+
 	// Remove contours with very small height
 	{
 		vector<vector<Point> > contours;
 		vector<Vec4i> hierarchy;
-		findContours(outImg.clone(), contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE, Point(0, 0));
+		findContours(outImg.clone(), contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0));
 
 		/// Get Largest Contour
 		vector<int > selected;
 		for (int i = 0; i < contours.size(); i++)
 		{
-			Rect2d t = boundingRect(contours[i]);
+			Rect_<double> t = boundingRect(contours[i]);
 			if (t.height < 40)
 				selected.push_back(i);
 
-		
+
 		}
-	
+
 		Mat g = Mat::zeros(outImg.size(), CV_8UC1);
 		for (int i = 0; i < selected.size(); i++)
 		{
@@ -455,7 +455,7 @@ bool extract(string imageName)
 		}
 		g = 255 - g;
 		outImg &= g;
-		
+
 
 	}
 
@@ -467,10 +467,10 @@ bool extract(string imageName)
 
 
 	imshow("t", outImg);
-	
+
 	imwrite("im.tif", outImg);
 	return true;
-	
+
 
 }
 
